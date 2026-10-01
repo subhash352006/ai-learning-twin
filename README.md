@@ -106,7 +106,7 @@ Experience the entire end-to-end evaluation:
 ## 🔐 Zero API Key Exposure
 
 - **No User Input Needed:** End users are **never** prompted to enter an API key anywhere in the application.
-- **Environment Variable Driven:** Configured through `GEMINI_API_KEY` (or `VITE_GEMINI_API_KEY` in `.env`).
+- **Environment Variable Driven:** Configured through `GEMINI_API_KEY` (or `GEMINI_API_KEY` in `.env`).
 - **Resilient Cognitive Engine:** If no key is supplied, the local cognitive simulation engine runs all evaluations deterministically so the demo never crashes or freezes.
 
 ---

@@ -7,7 +7,7 @@
 export class GeminiApiClient {
   /**
    * Calls the server-side `/api/gemini` endpoint.
-   * The server accesses GEMINI_API_KEY securely.
+   * Proxies prompt to server endpoint securely.
    */
   public static async generateStructuredContent<T>(
     prompt: string,
