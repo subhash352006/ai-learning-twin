@@ -7,7 +7,7 @@ interface DigitalTwinVisualizerProps {
 }
 
 export const DigitalTwinVisualizer: React.FC<DigitalTwinVisualizerProps> = ({ profile }) => {
-  const { currentMastery, estimatedLevel, currentOverallMastery, weakestArea, strongestArea } = profile;
+  const { currentMastery, level, currentOverallMastery, weakestArea, strongestArea } = profile;
 
   const getNodeColor = (score: number) => {
     if (score >= 75) return { border: 'border-emerald-500', bg: 'bg-emerald-500/20', text: 'text-emerald-400', glow: 'shadow-[0_0_15px_rgba(16,185,129,0.3)]' };
@@ -65,7 +65,7 @@ export const DigitalTwinVisualizer: React.FC<DigitalTwinVisualizerProps> = ({ pr
           <Cpu className="w-6 h-6 text-amber-400 mb-1" />
           <span className="text-xs font-bold text-white tracking-wide">TWIN CORE</span>
           <span className="text-[10px] text-amber-300 font-semibold px-2 py-0.5 rounded-full bg-amber-500/20 mt-0.5">
-            {estimatedLevel}
+            {level}
           </span>
         </div>
 

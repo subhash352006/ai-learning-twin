@@ -4,13 +4,16 @@ import {
   ArrowRight,
   Target,
   Sparkles,
-  Zap,
   TrendingUp,
   Cpu,
   Layers,
   CheckCircle,
   HelpCircle,
-  BookOpen,
+  MessageSquare,
+  Code2,
+  Database,
+  Gauge,
+  Sliders,
 } from 'lucide-react';
 import { useLearner } from '../../context/LearnerContext';
 
@@ -20,73 +23,152 @@ export const LandingView: React.FC = () => {
   return (
     <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-20">
       {/* Hero Section */}
-      <section className="text-center space-y-6 pt-4 sm:pt-10 relative">
-        {/* Glow backdrop */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
+      <section className="text-center space-y-6 pt-4 sm:pt-8 relative">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-[130px] pointer-events-none" />
 
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-semibold uppercase tracking-wider animate-pulse">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Next-Generation Adaptive AI Tutor</span>
+        {/* Central Product Differentiator Badge (Requirement 17) */}
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs sm:text-sm font-bold shadow-lg shadow-amber-500/10">
+          <Sparkles className="w-4 h-4 text-amber-400" />
+          <span>Most AI tutors adapt the answer. AI Learning Twin adapts the learning experience.</span>
         </div>
 
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-none max-w-4xl mx-auto">
-          AI Learning <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">Twin</span>
+          AI Learning{' '}
+          <span className="bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 bg-clip-text text-transparent">
+            Twin
+          </span>
         </h1>
 
         <p className="text-lg sm:text-2xl text-slate-300 max-w-3xl mx-auto font-light leading-relaxed">
           &ldquo;An adaptive AI tutor that builds a live model of how each learner understands AI.&rdquo;
         </p>
 
-        <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto">
-          Static tutorials treat every engineer the same. AI Learning Twin models your mental map, detects exact misconceptions, and adapts every lesson, quiz, and coding challenge in real time.
+        <p className="text-sm sm:text-base text-slate-400 max-w-2xl mx-auto leading-relaxed">
+          Instead of generic chatbot explanations, AI Learning Twin builds a living cognitive model tracking your knowledge, mental misconceptions, confidence calibration, and learning behaviors.
         </p>
 
-        {/* CTA Buttons */}
+        {/* CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
           <button
             onClick={() => navigateTo('goals')}
             className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-slate-950 shadow-lg shadow-amber-500/25 hover:shadow-amber-500/40 hover:scale-[1.02] active:scale-[0.98] transition"
           >
-            <span>Start Diagnostic</span>
+            <span>Start Adaptive Diagnostic</span>
             <ArrowRight className="w-5 h-5 font-bold" />
           </button>
 
           {profile.isDiagnosticComplete ? (
             <button
               onClick={() => navigateTo('dashboard')}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold bg-slate-900 border border-slate-700 hover:border-amber-400/50 text-slate-200 hover:text-white transition"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-200 hover:text-white transition"
             >
               <Cpu className="w-4 h-4 text-amber-400" />
-              <span>Resume Active Twin ({profile.currentOverallMastery}%)</span>
+              <span>Resume Learner Twin ({profile.currentOverallMastery}%)</span>
             </button>
           ) : (
             <button
               onClick={loadDemoProfile}
-              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold bg-slate-900 border border-slate-700 hover:border-amber-400/50 text-slate-300 hover:text-white transition"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl text-sm font-semibold bg-slate-900 border border-slate-700 hover:border-amber-400 text-slate-300 hover:text-white transition"
             >
               <Sparkles className="w-4 h-4 text-amber-400" />
-              <span>Instant Hackathon Demo Mode</span>
+              <span>Instant Hackathon Demo Twin</span>
             </button>
           )}
         </div>
 
-        {/* Live Metrics preview banner */}
+        {/* 4 Topic Modes Showcase */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center">
-            <span className="text-2xl font-black text-amber-400">10-Q</span>
-            <p className="text-xs text-slate-400 mt-0.5">Adaptive Diagnostic</p>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center space-y-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Python</span>
+            <span className="text-base font-bold text-white">Debug Mode</span>
+            <p className="text-[11px] text-slate-400">Fix reasoning bugs in model code</p>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center">
-            <span className="text-2xl font-black text-amber-400">Live</span>
-            <p className="text-xs text-slate-400 mt-0.5">Cognitive Twin Graph</p>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center space-y-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Data</span>
+            <span className="text-base font-bold text-white">Cleaning Mode</span>
+            <p className="text-[11px] text-slate-400">Decide how to fix dirty data</p>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center">
-            <span className="text-2xl font-black text-amber-400">Gemini</span>
-            <p className="text-xs text-slate-400 mt-0.5">Misconception Detection</p>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center space-y-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">ML</span>
+            <span className="text-base font-bold text-white">Experiment Mode</span>
+            <p className="text-[11px] text-slate-400">Live bias-variance simulator</p>
           </div>
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center">
-            <span className="text-2xl font-black text-amber-400">Dynamic</span>
-            <p className="text-xs text-slate-400 mt-0.5">Code & Quiz Adaptation</p>
+          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 text-center space-y-1">
+            <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block">Evaluation</span>
+            <span className="text-base font-bold text-white">Reasoning Mode</span>
+            <p className="text-[11px] text-slate-400">Defend metric choice in oncology</p>
+          </div>
+        </div>
+      </section>
+
+      {/* CORE LEARNING LOOP (Requirement 3) */}
+      <section className="space-y-8">
+        <div className="text-center space-y-2">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-semibold">
+            <Layers className="w-3.5 h-3.5" />
+            <span>Core Adaptive Loop Architecture</span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
+            How The Learner Twin Evolves
+          </h2>
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            Not a static question bot: a closed-loop system updating difficulty and activity selection after every action
+          </p>
+        </div>
+
+        {/* 9-step visible loop cards */}
+        <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto">
+          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Step 1</span>
+            <div className="text-xs font-bold text-white">DIAGNOSE</div>
+            <p className="text-[10px] text-slate-400">Multi-tier test with confidence</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Step 2</span>
+            <div className="text-xs font-bold text-white">BUILD TWIN</div>
+            <p className="text-[10px] text-slate-400">Model mastery & mental state</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Step 3</span>
+            <div className="text-xs font-bold text-white">FIND FRICTION</div>
+            <p className="text-[10px] text-slate-400">Pinpoint exact misconception</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Step 4</span>
+            <div className="text-xs font-bold text-white">SELECT MODE</div>
+            <p className="text-[10px] text-slate-400">Teach-Back, Experiment, etc.</p>
+          </div>
+          <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-center space-y-1">
+            <span className="text-[10px] font-bold text-amber-400 uppercase">Step 5</span>
+            <div className="text-xs font-bold text-white">EVALUATE & ADAPT</div>
+            <p className="text-[10px] text-slate-400">Update mastery & difficulty</p>
+          </div>
+        </div>
+      </section>
+
+      {/* TEACH-BACK MODE HIGHLIGHT (Requirement 7) */}
+      <section className="bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border border-amber-500/40 rounded-3xl p-6 sm:p-10 space-y-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold">
+              <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+              <span>Differentiating Feature: Teach-Back Mode</span>
+            </div>
+            <h3 className="text-2xl sm:text-3xl font-black text-white">
+              Instead of the AI teaching you, you teach the AI.
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              When learners only read explanations, they fall into passive comprehension illusions. In Teach-Back mode, you articulate concepts in your own words. The Learning Twin identifies subtle reasoning reversals (e.g. confusing training accuracy with generalization) and delivers pinpoint cognitive corrections.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigateTo('goals')}
+              className="px-6 py-3.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/20 transition hover:scale-105"
+            >
+              Start Diagnostic Experience
+            </button>
           </div>
         </div>
       </section>
@@ -96,148 +178,59 @@ export const LandingView: React.FC = () => {
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-white">The Paradigm Shift</h2>
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            Why traditional AI courses leave learners stuck with silent misconceptions
+            Why traditional static chatbots fail to resolve deep cognitive misconceptions
           </p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {/* Problem Card */}
-          <div className="bg-rose-950/20 border border-rose-900/50 rounded-2xl p-6 sm:p-8 space-y-5 relative overflow-hidden">
+          {/* Problem */}
+          <div className="bg-rose-950/20 border border-rose-900/50 rounded-2xl p-6 sm:p-8 space-y-4">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/30">
                 <HelpCircle className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-rose-200">The Problem: Static AI Learning</h3>
+              <h3 className="text-xl font-bold text-rose-200">The Problem: Generic Chatbots</h3>
             </div>
-            <ul className="space-y-3.5 text-sm text-slate-300">
-              <li className="flex items-start gap-3">
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold">✕</span>
-                <span><strong>Linear Syllabus:</strong> Beginners and experienced developers are forced through the identical rigid curriculum.</span>
+                <span><strong>No Persistent Learner Model:</strong> The AI forgets previous mistakes and treats every interaction like a fresh query.</span>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold">✕</span>
-                <span><strong>Invisible Misconceptions:</strong> Passing a multiple-choice quiz by guessing hides fundamental flaws (like confusing overfitting with optimal training).</span>
+                <span><strong>Unchecked Overconfidence:</strong> Learners guess correct answers on multiple-choice quizzes while holding severe misconceptions.</span>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-2.5">
                 <span className="text-rose-400 font-bold">✕</span>
-                <span><strong>Disconnected Chatbots:</strong> Standard LLM chatbots forget your previous mistakes, repeating the same generic tutorials.</span>
+                <span><strong>Identical Interaction Modes:</strong> Reading walls of text for Python, Data, and Math without subject-specific practice.</span>
               </li>
             </ul>
           </div>
 
-          {/* Solution Card */}
-          <div className="bg-amber-950/20 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-5 relative overflow-hidden shadow-[0_0_30px_rgba(245,158,11,0.08)]">
+          {/* Solution */}
+          <div className="bg-amber-950/20 border border-amber-500/40 rounded-2xl p-6 sm:p-8 space-y-4 shadow-[0_0_30px_rgba(245,158,11,0.08)]">
             <div className="flex items-center gap-3">
               <div className="p-2.5 rounded-xl bg-amber-500/15 text-amber-400 border border-amber-500/40">
                 <BrainCircuit className="w-6 h-6" />
               </div>
               <h3 className="text-xl font-bold text-amber-200">The Solution: AI Learning Twin</h3>
             </div>
-            <ul className="space-y-3.5 text-sm text-slate-300">
-              <li className="flex items-start gap-3">
+            <ul className="space-y-3 text-sm text-slate-300">
+              <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span><strong>Persistent Cognitive Model:</strong> Builds a live digital twin tracking your exact mastery across Python, Data Handling, ML, and Evaluation.</span>
+                <span><strong>Live Cognitive Model:</strong> Tracks mastery, strengths, weaknesses, and confidence calibration across 4 AI domains.</span>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span><strong>Deep Misconception Diagnosis:</strong> Google Gemini analyzes the reasoning behind wrong answers, pinpointing cognitive pitfalls.</span>
+                <span><strong>Confidence vs Knowledge Detection:</strong> Distinguishes true conceptual mastery from dangerous overconfidence.</span>
               </li>
-              <li className="flex items-start gap-3">
+              <li className="flex items-start gap-2.5">
                 <CheckCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
-                <span><strong>Adaptive Feedback Loop:</strong> Every quiz result and code submission updates your twin and re-routes your recommended next topic.</span>
+                <span><strong>Subject-Specific Workspaces:</strong> Debugging code for Python, cleaning tables for Data, experiments for ML, and reasoning for Evaluation.</span>
               </li>
             </ul>
           </div>
         </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="space-y-10">
-        <div className="text-center space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-amber-400 text-xs font-semibold">
-            <Layers className="w-3.5 h-3.5" />
-            <span>The 5-Stage Adaptive Loop</span>
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-white">How It Works</h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            Not just a question generator—a continuous feedback architecture
-          </p>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Step 1 */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-amber-500/40 transition group">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black text-sm group-hover:scale-110 transition">
-              01
-            </div>
-            <h4 className="text-base font-bold text-white flex items-center gap-2">
-              <Target className="w-4 h-4 text-amber-400" />
-              <span>Diagnose</span>
-            </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Take an 8–10 question multi-tier assessment covering Python, pandas, bias-variance tradeoffs, and evaluation metrics.
-            </p>
-          </div>
-
-          {/* Step 2 */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-amber-500/40 transition group">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black text-sm group-hover:scale-110 transition">
-              02
-            </div>
-            <h4 className="text-base font-bold text-white flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-amber-400" />
-              <span>Model Twin</span>
-            </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Gemini analyzes answer patterns, categorizes cognitive friction points, and spawns your live Learning Twin dashboard.
-            </p>
-          </div>
-
-          {/* Step 3 */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-amber-500/40 transition group">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black text-sm group-hover:scale-110 transition">
-              03
-            </div>
-            <h4 className="text-base font-bold text-white flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-amber-400" />
-              <span>Personalized Tutor</span>
-            </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Explore your weakest concepts with tailored explanations: Explain Simply, Give Example, Quiz Me, or Coding Tasks.
-            </p>
-          </div>
-
-          {/* Step 4 */}
-          <div className="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-amber-500/40 transition group">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-black text-sm group-hover:scale-110 transition">
-              04
-            </div>
-            <h4 className="text-base font-bold text-white flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-amber-400" />
-              <span>Adapt & Elevate</span>
-            </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Targeted 5-question adaptive quizzes and coding challenges resolve the misconception and elevate your mastery level.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Banner */}
-      <section className="bg-gradient-to-r from-slate-900 via-amber-950/30 to-slate-900 border border-amber-500/30 rounded-3xl p-8 sm:p-12 text-center space-y-6">
-        <h3 className="text-2xl sm:text-4xl font-extrabold text-white">
-          Ready to construct your AI Learning Twin?
-        </h3>
-        <p className="text-slate-300 text-sm sm:text-base max-w-xl mx-auto">
-          Start the 3-minute diagnostic assessment to map your current knowledge and discover your personalized learning pathway.
-        </p>
-        <button
-          onClick={() => navigateTo('goals')}
-          className="inline-flex items-center gap-3 px-8 py-3.5 rounded-xl text-base font-bold bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-lg shadow-amber-400/20 transition hover:scale-105"
-        >
-          <span>Start Diagnostic Now</span>
-          <ArrowRight className="w-5 h-5" />
-        </button>
       </section>
     </div>
   );

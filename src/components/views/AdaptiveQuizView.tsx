@@ -4,16 +4,14 @@ import {
   Sparkles,
   ArrowRight,
   RotateCcw,
-  AlertCircle,
   CheckCircle2,
   XCircle,
   TrendingUp,
-  BrainCircuit,
   Zap,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useLearner } from '../../context/LearnerContext';
-import { GeminiService } from '../../services/gemini';
+import { CognitiveEngine } from '../../services/ai/engine';
 import { QuizQuestion, QuizEvaluationResult } from '../../types';
 import { FALLBACK_ADAPTIVE_QUIZ } from '../../data/fallbackData';
 
@@ -22,41 +20,12 @@ export const AdaptiveQuizView: React.FC = () => {
   const [questions, setQuestions] = useState<QuizQuestion[]>(FALLBACK_ADAPTIVE_QUIZ);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
-  const [isLoading, setIsLoading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState<QuizEvaluationResult | null>(null);
 
-  const targetTopic = profile.recommendedNextTopic || 'Overfitting & Underfitting: Bias-Variance Tradeoff';
-  const targetMisconception = profile.misconceptions[0] || 'Confusing overfitting with underfitting';
+  const targetTopic = profile.recommendations.nextTopic || 'Overfitting & Underfitting: Bias-Variance Tradeoff';
+  const targetMisconception = profile.misconceptions[0]?.description || 'Confusing overfitting with underfitting';
   const previousMastery = profile.currentMastery.ml_fundamentals || 40;
-
-  // Generate quiz questions
-  useEffect(() => {
-    let isMounted = true;
-    const loadQuiz = async () => {
-      setIsLoading(true);
-      try {
-        const { questions: fetchedQuestions } = await GeminiService.generateAdaptiveQuiz(
-          targetTopic,
-          targetMisconception,
-          profile.estimatedLevel
-        );
-        if (isMounted && fetchedQuestions.length > 0) {
-          setQuestions(fetchedQuestions);
-        }
-      } catch (e) {
-        console.warn('Using fallback quiz:', e);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    loadQuiz();
-    return () => {
-      isMounted = false;
-    };
-  }, [targetTopic]);
-
   const currentQuestion = questions[currentIndex] || questions[0];
   const total = questions.length;
   const answeredCount = Object.keys(selectedAnswers).length;
@@ -99,8 +68,7 @@ export const AdaptiveQuizView: React.FC = () => {
     });
 
     try {
-      const { result } = await GeminiService.evaluateQuizPerformance(
-        targetTopic,
+      const result = CognitiveEngine.evaluateAdaptiveQuiz(
         calculatedScore,
         total,
         previousMastery,
@@ -108,7 +76,7 @@ export const AdaptiveQuizView: React.FC = () => {
       );
 
       setEvaluationResult(result);
-      updateQuizMastery(result, targetTopic);
+      updateQuizMastery(result);
 
       // Trigger celebratory confetti if score is solid!
       if (calculatedScore >= 4) {
@@ -169,12 +137,7 @@ export const AdaptiveQuizView: React.FC = () => {
         )}
       </div>
 
-      {isLoading ? (
-        <div className="py-20 text-center space-y-4">
-          <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs text-slate-400">Synthesizing targeted adaptive questions with Gemini...</p>
-        </div>
-      ) : evaluationResult ? (
+      {evaluationResult ? (
         /* Evaluation Results Card (exact required fields from prompt) */
         <div className="space-y-8 animate-fade-in">
           <div className="bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-500/50 rounded-3xl p-6 sm:p-10 space-y-8 shadow-2xl relative overflow-hidden">
@@ -264,10 +227,10 @@ export const AdaptiveQuizView: React.FC = () => {
 
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
-                  onClick={() => navigateTo('coding')}
+                  onClick={() => navigateTo('workspace')}
                   className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-xs bg-amber-400 hover:bg-amber-300 text-slate-950 transition hover:scale-105"
                 >
-                  <span>Practice in Code</span>
+                  <span>Explore in Workspace</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button

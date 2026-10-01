@@ -4,9 +4,7 @@ import {
   KnowledgeAreaId,
   DiagnosticAnalysisResult,
   QuizEvaluationResult,
-  CodingEvaluationResult,
-  CodingTask,
-  ActivityLog,
+  TeachBackEvaluation,
   DiagnosticAnswer,
 } from '../types';
 
@@ -15,26 +13,27 @@ export type AppView =
   | 'goals'
   | 'diagnostic'
   | 'dashboard'
-  | 'tutor'
+  | 'workspace'
+  | 'teach_back'
   | 'quiz'
-  | 'coding'
   | 'progress';
 
 interface LearnerContextType {
   profile: LearnerProfile;
   currentView: AppView;
-  selectedTopicForTutor: string;
+  selectedAreaForWorkspace: KnowledgeAreaId;
   navigateTo: (view: AppView) => void;
+  setSelectedAreaForWorkspace: (area: KnowledgeAreaId) => void;
   setGoals: (goals: KnowledgeAreaId[]) => void;
   completeDiagnostic: (analysis: DiagnosticAnalysisResult, answers: DiagnosticAnswer[]) => void;
-  updateQuizMastery: (evaluation: QuizEvaluationResult, topic: string) => void;
-  updateCodingMastery: (evaluation: CodingEvaluationResult, task: CodingTask) => void;
-  setSelectedTopicForTutor: (topic: string) => void;
+  recordTeachBack: (evaluation: TeachBackEvaluation) => void;
+  recordWorkspaceActivity: (area: KnowledgeAreaId, title: string, score: number, summary: string) => void;
+  updateQuizMastery: (evaluation: QuizEvaluationResult) => void;
   resetProfile: () => void;
   loadDemoProfile: () => void;
 }
 
-const STORAGE_KEY = 'ai_learning_twin_profile_v1';
+const STORAGE_KEY = 'ai_learning_twin_profile_v2';
 
 const DEFAULT_PROFILE: LearnerProfile = {
   name: 'Learner',
@@ -55,17 +54,25 @@ const DEFAULT_PROFILE: LearnerProfile = {
   initialOverallMastery: 0,
   currentOverallMastery: 0,
   strengths: [],
-  weakConcepts: [],
+  weaknesses: [],
   misconceptions: [],
-  estimatedLevel: 'Beginner',
+  confidenceAnalysis: {
+    mismatch: 'well_calibrated',
+    avgConfidence: 3.0,
+    accuracyPercent: 0,
+    insight: 'Take the diagnostic assessment to measure knowledge against confidence.',
+  },
+  level: 'Beginner',
   strongestArea: 'Python',
-  weakestArea: 'ML Fundamentals',
-  recommendedNextTopic: 'Overfitting & Underfitting: Bias-Variance Tradeoff',
-  recommendedDifficulty: 'Beginner',
-  shortReason: '',
-  completedQuizzesCount: 0,
-  completedCodingTasksCount: 0,
-  activityHistory: [],
+  weakestArea: 'Machine Learning Fundamentals',
+  recommendations: {
+    nextTopic: 'Overfitting & Underfitting: Bias-Variance Tradeoff',
+    nextActivity: 'teach_back',
+    difficulty: 'Beginner',
+    reason: 'Initial diagnostic required to formulate personalized learning trajectory.',
+  },
+  completedActivities: [],
+  progressHistory: [],
   lastUpdated: Date.now(),
 };
 
@@ -85,11 +92,8 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const [currentView, setCurrentView] = useState<AppView>('landing');
-  const [selectedTopicForTutor, setSelectedTopicForTutor] = useState<string>(
-    'Overfitting & Underfitting: Bias-Variance Tradeoff'
-  );
+  const [selectedAreaForWorkspace, setSelectedAreaForWorkspace] = useState<KnowledgeAreaId>('ml_fundamentals');
 
-  // Sync profile to localStorage on change
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
@@ -120,15 +124,6 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
         4
     );
 
-    const diagnosticLog: ActivityLog = {
-      id: `act-${Date.now()}`,
-      type: 'diagnostic',
-      title: 'Initial Adaptive Diagnostic Assessment',
-      timestamp: Date.now(),
-      score: overall,
-      details: `Diagnosed ${answers.filter((a) => a.isCorrect).length}/${answers.length} correct. Identified friction in ${analysis.weakestArea}.`,
-    };
-
     const newProfile: LearnerProfile = {
       ...profile,
       isDiagnosticComplete: true,
@@ -137,134 +132,217 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
       initialOverallMastery: overall,
       currentOverallMastery: overall,
       strengths: analysis.strengths,
-      weakConcepts: analysis.weakConcepts,
+      weaknesses: analysis.weakConcepts,
       misconceptions: analysis.misconceptions,
-      estimatedLevel: analysis.estimatedLevel,
+      confidenceAnalysis: analysis.confidenceAnalysis,
+      level: analysis.estimatedLevel,
       strongestArea: analysis.strongestArea,
       weakestArea: analysis.weakestArea,
-      recommendedNextTopic: analysis.recommendedNextTopic,
-      recommendedDifficulty: analysis.recommendedDifficulty,
-      shortReason: analysis.shortReason,
-      activityHistory: [diagnosticLog, ...profile.activityHistory],
+      recommendations: {
+        nextTopic: analysis.recommendedNextTopic,
+        nextActivity: analysis.recommendedNextActivity,
+        difficulty: analysis.recommendedDifficulty,
+        reason: analysis.reason,
+      },
+      completedActivities: [
+        {
+          id: `act-diag-${Date.now()}`,
+          type: 'adaptive_quiz',
+          title: 'Initial Multi-Domain Diagnostic Assessment',
+          score: overall,
+          timestamp: Date.now(),
+          summary: `Diagnosed ${answers.filter((a) => a.isCorrect).length}/${answers.length} correct across 4 domains. Detected friction in ${analysis.weakestArea}.`,
+        },
+      ],
+      progressHistory: [
+        {
+          timestamp: Date.now(),
+          overallMastery: overall,
+          activityTitle: 'Diagnostic Calibration',
+          masteryDelta: 0,
+        },
+      ],
       lastUpdated: Date.now(),
     };
 
     setProfile(newProfile);
-    setSelectedTopicForTutor(analysis.recommendedNextTopic);
   };
 
-  const updateQuizMastery = (evaluation: QuizEvaluationResult, topic: string) => {
+  const recordTeachBack = (evaluation: TeachBackEvaluation) => {
     setProfile((prev) => {
-      // Find concept key for weakest area (typically ml_fundamentals for demo)
-      const targetConcept: KnowledgeAreaId =
-        prev.weakestArea.toLowerCase().includes('data')
-          ? 'data_handling'
-          : prev.weakestArea.toLowerCase().includes('eval')
-          ? 'model_evaluation'
-          : prev.weakestArea.toLowerCase().includes('py')
-          ? 'python'
-          : 'ml_fundamentals';
+      const beforeML = prev.currentMastery.ml_fundamentals;
+      const afterML = Math.min(100, beforeML + evaluation.masteryDelta);
 
-      const beforeMastery = prev.currentMastery[targetConcept] || 40;
-      const newConceptMastery = evaluation.updatedMastery;
-
-      const updatedCurrentMastery = {
+      const updatedMastery = {
         ...prev.currentMastery,
-        [targetConcept]: newConceptMastery,
+        ml_fundamentals: afterML,
       };
 
       const newOverall = Math.round(
-        (updatedCurrentMastery.python +
-          updatedCurrentMastery.data_handling +
-          updatedCurrentMastery.ml_fundamentals +
-          updatedCurrentMastery.model_evaluation) /
+        (updatedMastery.python +
+          updatedMastery.data_handling +
+          updatedMastery.ml_fundamentals +
+          updatedMastery.model_evaluation) /
           4
       );
 
-      // Re-evaluate weakest area based on updated scores
-      const sorted = Object.entries(updatedCurrentMastery).sort((a, b) => a[1] - b[1]);
-      const newWeakestKey = sorted[0][0];
-      const areaDisplayNames: Record<string, string> = {
-        python: 'Python',
-        data_handling: 'Data Handling',
-        ml_fundamentals: 'ML Fundamentals',
-        model_evaluation: 'Model Evaluation',
-      };
-
-      const activityLog: ActivityLog = {
-        id: `act-${Date.now()}`,
-        type: 'quiz',
-        title: `Adaptive Quiz: ${topic}`,
-        timestamp: Date.now(),
-        score: Math.round((evaluation.score / evaluation.total) * 100),
-        details: `Scored ${evaluation.score}/${evaluation.total}. Mastery in ${areaDisplayNames[targetConcept]} updated from ${beforeMastery}% to ${newConceptMastery}%.`,
-        masteryChange: {
-          concept: targetConcept,
-          before: beforeMastery,
-          after: newConceptMastery,
-        },
-      };
-
-      const remainingMisconceptions = evaluation.misconceptionResolved
-        ? prev.misconceptions.filter(
-            (m) => !m.toLowerCase().includes('overfitting') && !m.toLowerCase().includes('accuracy')
-          )
-        : prev.misconceptions;
+      // Check if misconception was cleared
+      const updatedMisconceptions = prev.misconceptions.map((m) => {
+        if (m.id.includes('overfit') && evaluation.conceptualCorrectness === 'accurate') {
+          return { ...m, resolved: true };
+        }
+        return m;
+      });
 
       return {
         ...prev,
-        currentMastery: updatedCurrentMastery,
+        currentMastery: updatedMastery,
         currentOverallMastery: newOverall,
-        weakestArea: areaDisplayNames[newWeakestKey] || prev.weakestArea,
-        misconceptions: remainingMisconceptions,
-        recommendedNextTopic: evaluation.nextRecommendedTopic,
-        recommendedDifficulty: evaluation.nextDifficulty,
-        completedQuizzesCount: prev.completedQuizzesCount + 1,
-        activityHistory: [activityLog, ...prev.activityHistory],
+        misconceptions: updatedMisconceptions,
+        recommendations: {
+          nextTopic: 'Overfitting & Generalization Verification',
+          nextActivity: 'adaptive_quiz',
+          difficulty: evaluation.conceptualCorrectness === 'accurate' ? 'Intermediate' : 'Beginner',
+          reason:
+            'Teach-Back articulated conceptual gaps. Now verify mastery retention with an adaptive 5-question targeted quiz.',
+        },
+        completedActivities: [
+          {
+            id: `act-tb-${Date.now()}`,
+            type: 'teach_back',
+            title: 'Teach-Back: Overfitting & Generalization',
+            score: evaluation.clarityScore,
+            timestamp: Date.now(),
+            summary: evaluation.misconceptionDetected
+              ? `Misconception identified and targeted: ${evaluation.misconceptionTitle}.`
+              : 'Accurate articulation of bias-variance dynamics.',
+          },
+          ...prev.completedActivities,
+        ],
+        progressHistory: [
+          ...prev.progressHistory,
+          {
+            timestamp: Date.now(),
+            overallMastery: newOverall,
+            activityTitle: 'Teach-Back Remediation',
+            masteryDelta: evaluation.masteryDelta,
+          },
+        ],
         lastUpdated: Date.now(),
       };
     });
   };
 
-  const updateCodingMastery = (evaluation: CodingEvaluationResult, task: CodingTask) => {
+  const recordWorkspaceActivity = (
+    area: KnowledgeAreaId,
+    title: string,
+    score: number,
+    summary: string
+  ) => {
     setProfile((prev) => {
-      const targetConcept = task.concept;
-      const before = prev.currentMastery[targetConcept];
-      const after = Math.min(100, before + evaluation.masteryDelta);
-
-      const updatedCurrentMastery = {
+      const delta = Math.round(score * 0.12);
+      const updatedAreaMastery = Math.min(100, prev.currentMastery[area] + delta);
+      const updatedMastery = {
         ...prev.currentMastery,
-        [targetConcept]: after,
+        [area]: updatedAreaMastery,
       };
 
       const newOverall = Math.round(
-        (updatedCurrentMastery.python +
-          updatedCurrentMastery.data_handling +
-          updatedCurrentMastery.ml_fundamentals +
-          updatedCurrentMastery.model_evaluation) /
+        (updatedMastery.python +
+          updatedMastery.data_handling +
+          updatedMastery.ml_fundamentals +
+          updatedMastery.model_evaluation) /
           4
       );
 
-      const activityLog: ActivityLog = {
-        id: `act-${Date.now()}`,
-        type: 'coding',
-        title: `Coding Challenge: ${task.title}`,
-        timestamp: Date.now(),
-        score: evaluation.score,
-        details: evaluation.feedback,
-        masteryChange: {
-          concept: targetConcept,
-          before,
-          after,
-        },
+      return {
+        ...prev,
+        currentMastery: updatedMastery,
+        currentOverallMastery: newOverall,
+        completedActivities: [
+          {
+            id: `act-ws-${Date.now()}`,
+            type:
+              area === 'python'
+                ? 'debug_mode'
+                : area === 'data_handling'
+                ? 'data_cleaning'
+                : area === 'ml_fundamentals'
+                ? 'experiment'
+                : 'reasoning',
+            title,
+            score,
+            timestamp: Date.now(),
+            summary,
+          },
+          ...prev.completedActivities,
+        ],
+        progressHistory: [
+          ...prev.progressHistory,
+          {
+            timestamp: Date.now(),
+            overallMastery: newOverall,
+            activityTitle: title,
+            masteryDelta: delta,
+          },
+        ],
+        lastUpdated: Date.now(),
       };
+    });
+  };
+
+  const updateQuizMastery = (evaluation: QuizEvaluationResult) => {
+    setProfile((prev) => {
+      const delta = evaluation.updatedMastery - prev.currentMastery.ml_fundamentals;
+      const updatedMastery = {
+        ...prev.currentMastery,
+        ml_fundamentals: evaluation.updatedMastery,
+      };
+
+      const newOverall = Math.round(
+        (updatedMastery.python +
+          updatedMastery.data_handling +
+          updatedMastery.ml_fundamentals +
+          updatedMastery.model_evaluation) /
+          4
+      );
+
+      const updatedMisconceptions = prev.misconceptions.map((m) =>
+        m.id.includes('overfit') ? { ...m, resolved: evaluation.misconceptionResolved } : m
+      );
 
       return {
         ...prev,
-        currentMastery: updatedCurrentMastery,
+        currentMastery: updatedMastery,
         currentOverallMastery: newOverall,
-        completedCodingTasksCount: prev.completedCodingTasksCount + 1,
-        activityHistory: [activityLog, ...prev.activityHistory],
+        level: evaluation.nextDifficulty,
+        misconceptions: updatedMisconceptions,
+        recommendations: {
+          nextTopic: evaluation.nextRecommendedTopic,
+          nextActivity: evaluation.nextActivity,
+          difficulty: evaluation.nextDifficulty,
+          reason: `Post-quiz calibration: scored ${evaluation.score}/${evaluation.total}. Progressing to ${evaluation.nextDifficulty} level.`,
+        },
+        completedActivities: [
+          {
+            id: `act-quiz-${Date.now()}`,
+            type: 'adaptive_quiz',
+            title: 'Adaptive Remediation Quiz',
+            score: Math.round((evaluation.score / evaluation.total) * 100),
+            timestamp: Date.now(),
+            summary: `Scored ${evaluation.score}/${evaluation.total}. Mastery in ML Fundamentals elevated from ${evaluation.previousMastery}% to ${evaluation.updatedMastery}%.`,
+          },
+          ...prev.completedActivities,
+        ],
+        progressHistory: [
+          ...prev.progressHistory,
+          {
+            timestamp: Date.now(),
+            overallMastery: newOverall,
+            activityTitle: 'Adaptive Quiz Completion',
+            masteryDelta: delta,
+          },
+        ],
         lastUpdated: Date.now(),
       };
     });
@@ -279,7 +357,7 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const loadDemoProfile = () => {
     const demoProfile: LearnerProfile = {
       name: 'Hackathon Explorer',
-      selectedGoals: ['ml_fundamentals', 'model_evaluation'],
+      selectedGoals: ['ml_fundamentals', 'python'],
       isDiagnosticComplete: true,
       initialMastery: {
         python: 80,
@@ -296,40 +374,63 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
       initialOverallMastery: 58,
       currentOverallMastery: 58,
       strengths: [
-        'Python list comprehensions and vectorized idioms',
+        'Python list comprehension structures and vectorized data expressions',
         'Pandas DataFrame imputation and null handling',
       ],
-      weakConcepts: [
-        'Overfitting & Underfitting detection and mitigation',
+      weaknesses: [
+        'Overfitting & Underfitting Dynamics',
         'Accuracy paradox in severe class imbalance',
       ],
       misconceptions: [
-        'Confusing 100% training accuracy with optimal generalization (Overfitting vs Underfitting)',
+        {
+          id: 'misc-overfit-underfit',
+          concept: 'Machine Learning Fundamentals',
+          description: 'Confusing overfitting with underfitting (treating 100% training accuracy as optimal generalization)',
+          detectedIn: 'Decision tree generalization assessment',
+          resolved: false,
+          correction: '100% training accuracy with low validation accuracy indicates the model memorized noise (high variance), not true pattern discovery.',
+          followUp: 'How would you differentiate a high-variance failure from a high-bias failure?',
+        },
       ],
-      estimatedLevel: 'Beginner',
+      confidenceAnalysis: {
+        mismatch: 'overconfident',
+        avgConfidence: 4.2,
+        accuracyPercent: 55,
+        insight:
+          'High certainty recorded on training-score questions despite incorrect real-world generalization answers. Conflating high training accuracy with deployment capability.',
+      },
+      level: 'Beginner',
       strongestArea: 'Python',
-      weakestArea: 'ML Fundamentals',
-      recommendedNextTopic: 'Overfitting & Underfitting: Bias-Variance Tradeoff',
-      recommendedDifficulty: 'Beginner',
-      shortReason:
-        'Your diagnostic revealed strong programming instincts in Python (80%), but a core misconception where high training accuracy was mistaken for true generalization in ML Fundamentals (40%).',
-      completedQuizzesCount: 0,
-      completedCodingTasksCount: 0,
-      activityHistory: [
+      weakestArea: 'Machine Learning Fundamentals',
+      recommendations: {
+        nextTopic: 'Overfitting & Underfitting: Bias-Variance Tradeoff',
+        nextActivity: 'teach_back',
+        difficulty: 'Beginner',
+        reason:
+          'Learner understands basic model training but repeatedly confuses generalization with memorization. Teach-Back mode recommended to actively re-articulate the concept.',
+      },
+      completedActivities: [
         {
           id: 'demo-diag-1',
-          type: 'diagnostic',
+          type: 'adaptive_quiz',
           title: 'Initial Diagnostic Assessment',
-          timestamp: Date.now() - 3600000,
           score: 58,
-          details: 'Initial assessment completed across 10 core questions.',
+          timestamp: Date.now() - 3600000,
+          summary: 'Baseline knowledge assessment completed across 10 multi-tier questions.',
+        },
+      ],
+      progressHistory: [
+        {
+          timestamp: Date.now() - 3600000,
+          overallMastery: 58,
+          activityTitle: 'Initial Baseline Diagnostic',
+          masteryDelta: 0,
         },
       ],
       lastUpdated: Date.now(),
     };
 
     setProfile(demoProfile);
-    setSelectedTopicForTutor('Overfitting & Underfitting: Bias-Variance Tradeoff');
     navigateTo('dashboard');
   };
 
@@ -338,13 +439,14 @@ export const LearnerProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{
         profile,
         currentView,
-        selectedTopicForTutor,
+        selectedAreaForWorkspace,
         navigateTo,
+        setSelectedAreaForWorkspace,
         setGoals,
         completeDiagnostic,
+        recordTeachBack,
+        recordWorkspaceActivity,
         updateQuizMastery,
-        updateCodingMastery,
-        setSelectedTopicForTutor,
         resetProfile,
         loadDemoProfile,
       }}

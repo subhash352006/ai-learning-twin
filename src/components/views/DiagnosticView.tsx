@@ -3,21 +3,20 @@ import {
   BrainCircuit,
   ArrowRight,
   ArrowLeft,
-  CheckCircle2,
   AlertCircle,
-  HelpCircle,
-  Sparkles,
   Zap,
+  Gauge,
 } from 'lucide-react';
 import { useLearner } from '../../context/LearnerContext';
 import { DIAGNOSTIC_QUESTIONS } from '../../data/diagnosticQuestions';
-import { GeminiService } from '../../services/gemini';
-import { DiagnosticAnswer } from '../../types';
+import { CognitiveEngine } from '../../services/ai/engine';
+import { DiagnosticAnswer, ConfidenceRating } from '../../types';
 
 export const DiagnosticView: React.FC = () => {
   const { profile, completeDiagnostic, navigateTo } = useLearner();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswers, setSelectedAnswers] = useState<Record<string, number>>({});
+  const [confidenceRatings, setConfidenceRatings] = useState<Record<string, ConfidenceRating>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submissionError, setSubmissionError] = useState<string | null>(null);
 
@@ -26,10 +25,25 @@ export const DiagnosticView: React.FC = () => {
   const answeredCount = Object.keys(selectedAnswers).length;
   const progressPercent = Math.round((answeredCount / totalQuestions) * 100);
 
+  const currentConfidence = confidenceRatings[currentQuestion.id] || 3;
+
   const handleSelectOption = (optionIndex: number) => {
     setSelectedAnswers((prev) => ({
       ...prev,
       [currentQuestion.id]: optionIndex,
+    }));
+    if (!confidenceRatings[currentQuestion.id]) {
+      setConfidenceRatings((prev) => ({
+        ...prev,
+        [currentQuestion.id]: 3,
+      }));
+    }
+  };
+
+  const handleConfidenceSelect = (rating: ConfidenceRating) => {
+    setConfidenceRatings((prev) => ({
+      ...prev,
+      [currentQuestion.id]: rating,
     }));
   };
 
@@ -45,29 +59,36 @@ export const DiagnosticView: React.FC = () => {
     }
   };
 
-  // Quick fill helper for demo/speed testing
+  // Demo auto-fill: accurately replicates the prompt requirement:
+  // - High confidence (5/5) on wrong ML question to trigger Overconfidence Mismatch!
   const handleAutoFillDemo = () => {
     const demoAnswers: Record<string, number> = {};
+    const demoConfidence: Record<string, ConfidenceRating> = {};
+
     DIAGNOSTIC_QUESTIONS.forEach((q) => {
-      // Intentionally make ML Fundamentals (diag-ml-1 & diag-ml-2) wrong to trigger
-      // the exact demo flow required by the prompt!
       if (q.id === 'diag-ml-1') {
-        // select 0 (Underfitting instead of Overfitting) to trigger misconception
+        // selects 0 (underfitting instead of overfitting) with high confidence (5/5)
         demoAnswers[q.id] = 0;
+        demoConfidence[q.id] = 5;
       } else if (q.id === 'diag-ml-2') {
-        // select 0 (Increase L2 regularization instead of Increase capacity)
         demoAnswers[q.id] = 0;
+        demoConfidence[q.id] = 4;
       } else {
         demoAnswers[q.id] = q.correctAnswer;
+        demoConfidence[q.id] = 4;
       }
     });
+
     setSelectedAnswers(demoAnswers);
+    setConfidenceRatings(demoConfidence);
     setCurrentIndex(totalQuestions - 1);
   };
 
   const handleSubmit = async () => {
     if (answeredCount < totalQuestions) {
-      setSubmissionError(`Please answer all ${totalQuestions} questions before submitting (currently answered ${answeredCount}/${totalQuestions}).`);
+      setSubmissionError(
+        `Please complete all ${totalQuestions} questions before submitting (currently answered ${answeredCount}/${totalQuestions}).`
+      );
       return;
     }
 
@@ -75,7 +96,6 @@ export const DiagnosticView: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Prepare structured answer log
       const answerRecords: DiagnosticAnswer[] = DIAGNOSTIC_QUESTIONS.map((q) => {
         const chosen = selectedAnswers[q.id];
         return {
@@ -86,22 +106,20 @@ export const DiagnosticView: React.FC = () => {
           isCorrect: chosen === q.correctAnswer,
           concept: q.concept,
           difficulty: q.difficulty,
+          confidence: confidenceRatings[q.id] || 3,
         };
       });
 
-      const { result } = await GeminiService.analyzeDiagnostic(
+      const analysis = await CognitiveEngine.analyzeDiagnostic(
         answerRecords,
         profile.selectedGoals
       );
 
-      // Save to learner state
-      completeDiagnostic(result, answerRecords);
-
-      // Navigate to Learning Twin Dashboard
+      completeDiagnostic(analysis, answerRecords);
       navigateTo('dashboard');
     } catch (err: any) {
       console.error('Submission error:', err);
-      setSubmissionError(err?.message || 'Failed to submit diagnostic. Please try again.');
+      setSubmissionError(err?.message || 'Failed to analyze diagnostic. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -115,30 +133,29 @@ export const DiagnosticView: React.FC = () => {
 
   return (
     <div className="min-h-screen py-10 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto space-y-6">
-      {/* Top Header & Progress */}
+      {/* Header & Progress */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
-              Diagnostic Assessment
+              Adaptive Baseline Diagnostic
             </span>
             <span className="text-xs text-slate-500">•</span>
             <span className="text-xs text-slate-400">
               Question {currentIndex + 1} of {totalQuestions}
             </span>
           </div>
-          <h2 className="text-xl font-bold text-white">Baseline Knowledge Evaluation</h2>
+          <h2 className="text-xl font-bold text-white">Diagnostic & Confidence Calibration</h2>
         </div>
 
-        {/* Demo Fast Fill button */}
         <div className="flex items-center gap-3">
           <button
             onClick={handleAutoFillDemo}
-            className="text-xs px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1.5"
-            title="Auto-fill with sample answers demonstrating ML friction"
+            className="text-xs px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1.5"
+            title="Auto-fill benchmark answers for demo"
           >
-            <Zap className="w-3 h-3 text-amber-400" />
-            <span>Fast-Fill Benchmark Answers</span>
+            <Zap className="w-3.5 h-3.5 text-amber-400" />
+            <span>Fast-Fill Benchmark</span>
           </button>
         </div>
       </div>
@@ -146,8 +163,10 @@ export const DiagnosticView: React.FC = () => {
       {/* Progress Bar */}
       <div className="space-y-1.5">
         <div className="flex justify-between text-xs text-slate-400">
-          <span>Completion Progress</span>
-          <span className="text-amber-400 font-semibold">{answeredCount}/{totalQuestions} Completed ({progressPercent}%)</span>
+          <span>Assessment Progress</span>
+          <span className="text-amber-400 font-semibold">
+            {answeredCount}/{totalQuestions} Answered ({progressPercent}%)
+          </span>
         </div>
         <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
           <div
@@ -159,10 +178,7 @@ export const DiagnosticView: React.FC = () => {
 
       {/* Question Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
-        {/* Subtle accent glow */}
-        <div className="absolute top-0 left-0 w-24 h-24 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
-
-        {/* Question Metadata */}
+        {/* Metadata */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xs font-semibold px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-700">
@@ -174,7 +190,7 @@ export const DiagnosticView: React.FC = () => {
           </div>
 
           <span className="text-xs text-slate-500 font-mono">
-            ID: {currentQuestion.id}
+            {currentQuestion.id}
           </span>
         </div>
 
@@ -187,7 +203,7 @@ export const DiagnosticView: React.FC = () => {
         <div className="space-y-3 pt-2">
           {currentQuestion.options.map((option, idx) => {
             const isSelected = selectedAnswers[currentQuestion.id] === idx;
-            const letter = String.fromCharCode(65 + idx); // A, B, C, D
+            const letter = String.fromCharCode(65 + idx);
 
             return (
               <button
@@ -214,8 +230,47 @@ export const DiagnosticView: React.FC = () => {
           })}
         </div>
 
-        {/* Question Navigation shortcuts dots */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-4 border-t border-slate-800/80">
+        {/* Confidence Rating Section (Requirement 8: Confidence vs Knowledge) */}
+        <div className="pt-4 border-t border-slate-800/80 space-y-2">
+          <div className="flex items-center justify-between text-xs text-slate-400">
+            <span className="font-semibold text-slate-300 flex items-center gap-1.5">
+              <Gauge className="w-3.5 h-3.5 text-amber-400" />
+              <span>How confident are you in this answer?</span>
+            </span>
+            <span className="text-amber-400 font-mono">Level {currentConfidence} of 5</span>
+          </div>
+
+          <div className="grid grid-cols-5 gap-2">
+            {([1, 2, 3, 4, 5] as ConfidenceRating[]).map((rating) => {
+              const labels: Record<number, string> = {
+                1: '1: Pure Guess',
+                2: '2: Low',
+                3: '3: Moderate',
+                4: '4: High',
+                5: '5: Absolute Certainty',
+              };
+              const isSelected = currentConfidence === rating;
+
+              return (
+                <button
+                  key={rating}
+                  type="button"
+                  onClick={() => handleConfidenceSelect(rating)}
+                  className={`py-2 px-1 text-center rounded-lg border text-xs font-semibold transition ${
+                    isSelected
+                      ? 'bg-amber-400 border-amber-400 text-slate-950 font-bold'
+                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-white'
+                  }`}
+                >
+                  {labels[rating]}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Question Quick Jump Dots */}
+        <div className="flex flex-wrap items-center justify-center gap-1.5 pt-2 border-t border-slate-800/80">
           {DIAGNOSTIC_QUESTIONS.map((q, idx) => {
             const isAnswered = selectedAnswers[q.id] !== undefined;
             const isCurrent = idx === currentIndex;
@@ -230,7 +285,6 @@ export const DiagnosticView: React.FC = () => {
                     ? 'bg-slate-800 text-amber-400 border border-amber-500/30'
                     : 'bg-slate-950 text-slate-500 border border-slate-800 hover:border-slate-700'
                 }`}
-                title={`Go to Question ${idx + 1}`}
               >
                 {idx + 1}
               </button>
@@ -241,18 +295,18 @@ export const DiagnosticView: React.FC = () => {
 
       {/* Error alert */}
       {submissionError && (
-        <div className="flex items-center gap-2 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs animate-shake">
+        <div className="flex items-center gap-2 p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs">
           <AlertCircle className="w-4 h-4 flex-shrink-0 text-rose-400" />
           <span>{submissionError}</span>
         </div>
       )}
 
-      {/* Bottom Actions */}
+      {/* Footer Navigation */}
       <div className="flex items-center justify-between gap-4 pt-2">
         <button
           onClick={handlePrev}
           disabled={currentIndex === 0}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-semibold border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-900 transition disabled:opacity-40"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Previous</span>
@@ -264,7 +318,7 @@ export const DiagnosticView: React.FC = () => {
               onClick={handleNext}
               className="flex items-center gap-1.5 px-6 py-2.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition"
             >
-              <span>Next Question</span>
+              <span>Next</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           ) : (
@@ -276,12 +330,12 @@ export const DiagnosticView: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <div className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin" />
-                  <span>Synthesizing Cognitive Model with Gemini...</span>
+                  <span>Synthesizing Learning Twin...</span>
                 </>
               ) : (
                 <>
                   <BrainCircuit className="w-4 h-4" />
-                  <span>Submit & Build AI Learning Twin</span>
+                  <span>Submit & Formulate Learning Twin</span>
                 </>
               )}
             </button>

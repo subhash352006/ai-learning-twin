@@ -1,23 +1,18 @@
 import React from 'react';
 import {
-  BarChart2,
   TrendingUp,
-  Award,
   CheckCircle2,
   AlertTriangle,
-  RotateCcw,
   Download,
   Calendar,
-  Layers,
-  Sparkles,
   ArrowRight,
-  BookOpen,
+  MessageSquare,
+  Layers,
 } from 'lucide-react';
 import { useLearner } from '../../context/LearnerContext';
-import { ProgressBar } from '../common/ProgressBar';
 
 export const ProgressView: React.FC = () => {
-  const { profile, resetProfile, navigateTo } = useLearner();
+  const { profile, navigateTo } = useLearner();
 
   const {
     initialOverallMastery,
@@ -25,18 +20,15 @@ export const ProgressView: React.FC = () => {
     initialMastery,
     currentMastery,
     strengths,
-    weakConcepts,
+    weaknesses,
     misconceptions,
-    estimatedLevel,
-    completedQuizzesCount,
-    completedCodingTasksCount,
-    activityHistory,
-    recommendedNextTopic,
+    level,
+    completedActivities,
+    recommendations,
   } = profile;
 
   const netImprovement = currentOverallMastery - initialOverallMastery;
 
-  // Identify concepts that improved
   const conceptsStatus = [
     {
       id: 'python',
@@ -69,7 +61,6 @@ export const ProgressView: React.FC = () => {
   ];
 
   const improvedConcepts = conceptsStatus.filter((c) => c.gain > 0 || c.current >= 70);
-  const remainingWeakConcepts = conceptsStatus.filter((c) => c.current < 65);
 
   const exportProfileJson = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(profile, null, 2));
@@ -115,7 +106,7 @@ export const ProgressView: React.FC = () => {
         </div>
       </div>
 
-      {/* Primary Mastery Stats (Exact format required by prompt) */}
+      {/* Primary Mastery Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Initial Diagnostic Mastery */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-1">
@@ -157,10 +148,10 @@ export const ProgressView: React.FC = () => {
             Cognitive Stage
           </span>
           <div className="text-2xl sm:text-3xl font-black text-amber-300 pt-1">
-            {estimatedLevel}
+            {level}
           </div>
           <p className="text-[11px] text-slate-400">
-            {completedQuizzesCount} Quizzes • {completedCodingTasksCount} Code tasks
+            {completedActivities.length} Learning activities completed
           </p>
         </div>
       </div>
@@ -236,20 +227,22 @@ export const ProgressView: React.FC = () => {
           </ul>
         </div>
 
-        {/* Remaining Weak Concepts */}
+        {/* Remaining Weak Concepts & Misconceptions */}
         <div className="bg-slate-900/90 border border-amber-500/30 rounded-2xl p-6 space-y-4">
           <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
             <AlertTriangle className="w-4 h-4" />
-            <span>Remaining Focus & Weak Concepts</span>
+            <span>Misconceptions & Weak Concepts</span>
           </div>
           <ul className="space-y-2.5 text-xs text-slate-300">
-            {misconceptions.map((m, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
-                <span className="text-rose-400 font-bold">⚠</span>
-                <span>{m}</span>
+            {misconceptions.map((m) => (
+              <li key={m.id} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
+                <span className={m.resolved ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
+                  {m.resolved ? '✓ [RESOLVED]' : '⚠ [ACTIVE]'}
+                </span>
+                <span>{m.description}</span>
               </li>
             ))}
-            {weakConcepts.map((w, idx) => (
+            {weaknesses.map((w, idx) => (
               <li key={`weak-${idx}`} className="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="text-amber-400 font-bold">•</span>
                 <span>{w}</span>
@@ -266,18 +259,18 @@ export const ProgressView: React.FC = () => {
           <span>Session Activity Log</span>
         </h3>
 
-        {activityHistory.length === 0 ? (
+        {completedActivities.length === 0 ? (
           <p className="text-xs text-slate-500">No activities logged yet.</p>
         ) : (
           <div className="space-y-3">
-            {activityHistory.map((act) => (
+            {completedActivities.map((act) => (
               <div
                 key={act.id}
                 className="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
               >
                 <div>
                   <span className="font-bold text-white block">{act.title}</span>
-                  <span className="text-slate-400 leading-relaxed">{act.details}</span>
+                  <span className="text-slate-400 leading-relaxed">{act.summary}</span>
                 </div>
                 {act.score !== undefined && (
                   <span className="text-xs font-bold px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/30 self-start sm:self-center">
@@ -296,15 +289,23 @@ export const ProgressView: React.FC = () => {
           <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">
             Next Recommended Milestone
           </span>
-          <h4 className="text-lg font-bold text-white">{recommendedNextTopic}</h4>
+          <h4 className="text-lg font-bold text-white">{recommendations.nextTopic}</h4>
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => navigateTo('tutor')}
+            onClick={() => navigateTo('teach_back')}
             className="flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold text-xs bg-amber-400 hover:bg-amber-300 text-slate-950 transition hover:scale-105"
           >
-            <span>Continue in AI Tutor</span>
-            <ArrowRight className="w-4 h-4" />
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Launch Teach-Back Mode</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={() => navigateTo('workspace')}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-xs bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition"
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Open Topic Workspace</span>
           </button>
         </div>
       </div>

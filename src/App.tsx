@@ -5,11 +5,11 @@ import { LandingView } from './components/views/LandingView';
 import { GoalSelectionView } from './components/views/GoalSelectionView';
 import { DiagnosticView } from './components/views/DiagnosticView';
 import { DashboardView } from './components/views/DashboardView';
-import { TutorView } from './components/views/TutorView';
+import { TeachBackView } from './components/views/TeachBackView';
+import { TopicWorkspaceView } from './components/views/TopicWorkspaceView';
 import { AdaptiveQuizView } from './components/views/AdaptiveQuizView';
-import { CodingPracticeView } from './components/views/CodingPracticeView';
 import { ProgressView } from './components/views/ProgressView';
-import { BrainCircuit, ShieldCheck } from 'lucide-react';
+import { BrainCircuit, ShieldCheck, Sparkles } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { currentView } = useLearner();
@@ -24,12 +24,12 @@ const AppContent: React.FC = () => {
         return <DiagnosticView />;
       case 'dashboard':
         return <DashboardView />;
-      case 'tutor':
-        return <TutorView />;
+      case 'teach_back':
+        return <TeachBackView />;
+      case 'workspace':
+        return <TopicWorkspaceView />;
       case 'quiz':
         return <AdaptiveQuizView />;
-      case 'coding':
-        return <CodingPracticeView />;
       case 'progress':
         return <ProgressView />;
       default:
@@ -57,10 +57,13 @@ const AppContent: React.FC = () => {
           <div className="flex items-center gap-4 text-slate-400">
             <span className="flex items-center gap-1.5 text-slate-400">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Google Gemini Powered</span>
+              <span>Google Gemini Architecture Ready</span>
             </span>
             <span>•</span>
-            <span>Vercel + GitHub Ready</span>
+            <span className="text-amber-400 font-semibold flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Adapts The Learning Experience</span>
+            </span>
           </div>
         </div>
       </footer>
