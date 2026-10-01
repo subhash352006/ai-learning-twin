@@ -1,204 +1,129 @@
 # AI Learning Twin 🧠✨
 
-> **"An adaptive AI tutor that builds a live model of how each learner understands AI."**
+> **"Most AI tutors adapt the answer. AI Learning Twin adapts the learning experience."**
+> 
+> *An adaptive AI tutor that builds a live model of how each learner understands, answers, explains, and improves.*
 
 [![Built with React](https://img.shields.io/badge/React-19-blue.svg)](https://react.dev/)
-[![Powered by Gemini](https://img.shields.io/badge/AI-Google%20Gemini-amber.svg)](https://aistudio.google.com/)
+[![Powered by Gemini Architecture](https://img.shields.io/badge/AI-Google%20Gemini%20Ready-amber.svg)](https://aistudio.google.com/)
 [![Styled with Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-38bdf8.svg)](https://tailwindcss.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-Ready-3178c6.svg)](https://www.typescriptlang.org/)
 [![Vercel Deployment](https://img.shields.io/badge/Vercel-Optimized-black.svg)](https://vercel.com/)
 
 ---
 
-## 🚀 Overview
+## 🚀 The Product Identity & Difference
 
-Static AI courses treat every learner identically: beginners get lost in mathematical jargon while experienced engineers waste time re-reading syntax tutorials. Furthermore, conventional multiple-choice quizzes fail to diagnose **silent misconceptions** (such as confusing 100% training accuracy with good generalization).
+Conventional AI tutors and chatbots treat learning as a simple Q&A lookup: you ask a question, the AI generates a reply, and testing consists of generic multiple-choice questions.
 
-**AI Learning Twin** solves this by maintaining a persistent **Cognitive Twin** of the learner:
-1. **Multi-Domain Baseline Diagnosis:** Evaluates Python, Data Handling, ML Fundamentals, and Model Evaluation.
-2. **Cognitive Twin Modeling:** Google Gemini analyzes error patterns to uncover subtle mental model flaws rather than merely scoring answers.
-3. **Adaptive Tutoring:** Calibrates explanations, analogies, and code snippets specifically to the learner's estimated level and friction points.
-4. **Targeted Adaptive Quizzing:** 5-question micro-quizzes specifically designed to verify whether the identified misconception has been eliminated.
-5. **Hands-On Coding Practice:** Generates tailored, lightweight Python implementation challenges evaluated for logic, edge cases, and mastery gain.
-6. **Dynamic Trajectory:** Continuously updates cognitive mastery percentages, re-routing recommendations in real time.
+**AI Learning Twin is fundamentally different:**
+It constructs and continuously updates a **living Digital Twin of the learner**:
+- **Probabilistic Mastery by Concept:** Tracks Python, Data Handling, ML Fundamentals, and Model Evaluation.
+- **Deep Cognitive Misconception Detection:** Uncovers *why* an answer or explanation is flawed (e.g. confusing 100% training accuracy with good generalization).
+- **Confidence vs. Knowledge Calibration:** Detects overconfidence (high certainty on memorized training scores despite poor validation generalization) and underconfidence.
+- **Adaptive Difficulty:** Automatically tunes complexity (`Beginner` &rarr; `Intermediate` &rarr; `Advanced`).
+- **Dynamic Learning Trajectory:** Reroutes to the optimal activity type based on performance.
 
 ---
 
-## ⚡ Core Hackathon User Flow (Demo Walkthrough)
+## 🔄 Core Closed-Loop Architecture
 
-The entire application supports this end-to-end evaluation flow:
+The application is built around this 9-stage loop:
 
 ```mermaid
-flowchart LR
-    A["Landing Page"] --> B["Select Goals (ML & Python)"]
-    B --> C["10-Question Diagnostic"]
-    C --> D["Gemini Cognitive Analysis"]
-    D --> E["Learning Twin Dashboard"]
-    E --> F["AI Tutor (Explain / Example)"]
-    F --> G["Adaptive 5-Q Quiz"]
-    G --> H["Mastery Update (40% → 55%)"]
-    H --> I["Coding Challenge Practice"]
-    I --> J["Progress Page (+26% Growth)"]
+flowchart TD
+    A["1. DIAGNOSE (10-Q multi-tier with Confidence 1-5)"] --> B["2. BUILD LEARNER TWIN"]
+    B --> C["3. IDENTIFY WEAKNESS + MISCONCEPTION"]
+    C --> D["4. SELECT THE RIGHT LEARNING MODE"]
+    D --> E["5. TEACH / PRACTICE (Teach-Back, Debug, Experiment, etc.)"]
+    E --> F["6. EVALUATE (Cognitive Analysis)"]
+    F --> G["7. UPDATE LEARNER TWIN (Mastery & Calibration)"]
+    G --> H["8. ADAPT DIFFICULTY (Beginner → Intermediate → Advanced)"]
+    H --> I["9. SELECT NEXT BEST ACTIVITY (Adaptive Recommendation)"]
+    I --> D
 ```
 
-### Quick Demo in 60 Seconds:
-1. **Landing Page:** Click **"Start Diagnostic"** (or use the one-click **"Load Demo Twin"** button in the header).
+---
+
+## 🎯 Subject-Specific Interaction Modes
+
+To ensure authentic mastery, each topic uses an interaction model designed specifically for that discipline:
+
+| Topic | Learning Mode | Interactive Experience |
+| :--- | :--- | :--- |
+| **Python** | **Debug Mode** | Give the learner a short Python script containing subtle memory or parameter bugs (e.g. mutable default argument cache leakage). Evaluate their debugging approach and reasoning flaw. |
+| **Data Handling** | **Data Cleaning Mode** | Present an interactive raw dataset containing missing values, duplicates, casing discrepancies, and impossible outliers (e.g. Age: 380). Evaluate the learner's decisions and data consequences. |
+| **ML Fundamentals** | **Experiment Mode** | Live educational bias-variance simulator. Learner tunes Dataset Size, Regularization ($L_2$ Penalty), and Model Complexity to observe real-time simulated changes in Training Accuracy, Validation Accuracy, and Generalization Gap. |
+| **Model Evaluation** | **Reasoning Mode** | High-stakes oncology cancer screening triage scenario. The learner selects the primary metric (*Recall*) and defends **Why?** in writing to evaluate reasoning and eliminate the Accuracy Paradox. |
+
+---
+
+## 🗣️ Differentiating Feature: Teach-Back Mode
+
+Instead of the AI merely lecturing the student:
+> **The student explains the concept in their own words to the AI.**
+
+1. The learner explains what *overfitting* is and why 100% training accuracy can be dangerous.
+2. The learner rates their confidence (1 to 5).
+3. The cognitive engine evaluates:
+   - **Conceptual Correctness**
+   - **Misconception Detection** *(e.g., "MISCONCEPTION DETECTED: You reversed the training-data behavior")*
+   - **Targeted Cognitive Correction**
+   - **Missing Dimensions**
+   - **Follow-up verification check**
+4. The Learner Twin updates immediately with elevated mastery!
+
+---
+
+## ⚡ The Benchmark Demo Flow
+
+Experience the entire end-to-end evaluation:
+
+1. **Landing Page:** Click **"Start Adaptive Diagnostic"** (or use **"Demo Twin"** in the top bar).
 2. **Goal Selection:** Select **Machine Learning Fundamentals** and **Python**.
-3. **Diagnostic Assessment:** Click **"Fast-Fill Benchmark Answers"** (or answer questions). Click **"Submit & Build AI Learning Twin"**.
-4. **Learning Twin Dashboard:** Observe the live neural graph and metrics:
+3. **Diagnostic Assessment:** Click **"Fast-Fill Benchmark"** (rates confidence and selects benchmark answers). Click **"Submit & Formulate Learning Twin"**.
+4. **Learning Twin Dashboard:** Observe the live cognitive model:
    - Python: **80%**
    - Data Handling: **60%**
-   - ML Fundamentals: **40%** (Weakest Area)
+   - ML Fundamentals: **40%** *(Weakest Area)*
    - Model Evaluation: **50%**
    - Detected Misconception: *Confusing overfitting with underfitting*
-   - Recommended Next Topic: *Overfitting & Underfitting: Bias-Variance Tradeoff*
-5. **AI Tutor:** Click **"Ask AI Tutor to Explain"**. Toggle between **Explain Simply**, **Give Example**, and examine the Scikit-Learn code.
-6. **Adaptive Quiz:** Click **"Take Adaptive Quiz"**. Use the **"Demo 80% Score"** helper or answer questions. Submit to observe:
+   - Confidence vs. Knowledge: *Overconfidence signal detected*
+   - Recommended Next Activity: **Teach-Back Mode**
+5. **Teach-Back Mode:** Click **"Start Teach-Back Mode"**. Click **"Test Misconception Flaw"** and submit to observe the AI detect the reversed training data behavior, provide the targeted correction, and check with a follow-up question.
+6. **Adaptive Quiz:** Click **"Proceed to Adaptive Quiz"**. Click **"Demo 80% Score"** and submit:
    - Previous Mastery: **40%**
    - Quiz Score: **80%**
    - Updated Mastery: **55%**
    - Misconception Status: **Resolved**
-   - Next Recommendation: **Intermediate ML Practice**
-7. **Coding Practice:** Click **"Practice in Code"**. Click **"Auto-Fill Solution"** and submit to receive instant Gemini automated code evaluation.
-8. **Progress Page:** Navigate to **Progress** to visualize the growth trajectory:
-   - Initial Mastery: **42%** &rarr; Current Mastery: **68%** &rarr; Net Improvement: **+26%**!
+   - Next Difficulty: **Intermediate**
+7. **Topic Workspace:** Explore **ML Experiment Mode**, **Python Debug Mode**, **Data Cleaning Mode**, and **Reasoning Mode**.
+8. **Trajectory Progress:** View the growth chart:
+   - Initial Mastery: **42%** &rarr; Current Mastery: **68%** (+26% Growth).
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## 🔐 Zero API Key Exposure
 
-- **Frontend Framework:** React 19 + TypeScript
-- **Build Tool:** Vite 8 (Hot Module Replacement, optimized bundle)
-- **Styling:** Tailwind CSS v4 with modern dark theme (`#090d16`), amber/gold accents, glowing borders
-- **AI Engine:** Google Gemini API (`gemini-2.5-flash` / `gemini-1.5-flash` with clean service abstraction)
-- **Icons & Visuals:** Lucide React icons, Canvas Confetti celebrations
-- **State Management & Persistence:** React Context + `localStorage` for zero-friction hackathon demos
-- **Deployment:** Vercel SPA configuration (`vercel.json`), GitHub Actions ready
+- **No User Input Needed:** End users are **never** prompted to enter an API key anywhere in the application.
+- **Environment Variable Driven:** Configured through `GEMINI_API_KEY` (or `VITE_GEMINI_API_KEY` in `.env`).
+- **Resilient Cognitive Engine:** If no key is supplied, the local cognitive simulation engine runs all evaluations deterministically so the demo never crashes or freezes.
 
 ---
 
-## 🔐 Environment Variables & Security
+## 📦 How to Run
 
-> **Important:** The Gemini API key is **never** hardcoded into any client-side source code.
-
-Create a `.env` file in the root directory:
-
-```bash
-# Copy the example template
-cp .env.example .env
-```
-
-Add your Gemini API key (obtainable for free at [Google AI Studio](https://aistudio.google.com/)):
-
-```env
-VITE_GEMINI_API_KEY=AIzaSy...your_gemini_api_key_here
-```
-
-### 💡 Hackathon Evaluation Resilience:
-- **In-App Key Setup:** Evaluators or judges can click the **API Key** badge in the top navigation bar to paste their key securely during live judging.
-- **Offline Simulation Mode:** If no API key is provided or if network fails, the application activates an intelligent local fallback engine so the demo **never crashes or freezes**.
-
----
-
-## 📦 Getting Started
-
-### 1. Prerequisites
-- **Node.js**: v18.0.0 or higher
-- **npm**: v9.0.0 or higher
-
-### 2. Installation
-```bash
-git clone https://github.com/your-username/ai-learning-twin.git
-cd "AI Learning Twin"
+```powershell
+# 1. Install dependencies
 npm install
-```
 
-### 3. Run Development Server
-```bash
+# 2. Run local development server
 npm run dev
-```
-Open your browser at [http://localhost:5173](http://localhost:5173).
 
-### 4. Build for Production
-```bash
+# 3. Build for production (TypeScript + Vite)
 npm run build
 ```
-Generates production-optimized static assets in the `dist/` directory.
-
-### 5. Preview Production Build
-```bash
-npm run preview
-```
 
 ---
-
-## 🚢 Deploying to Vercel
-
-1. Push your code to GitHub:
-   ```bash
-   git init
-   git add .
-   git commit -m "feat: AI Learning Twin initial release"
-   git branch -M main
-   git remote add origin https://github.com/your-username/ai-learning-twin.git
-   git push -u origin main
-   ```
-2. Import the repository in [Vercel](https://vercel.com/new).
-3. Under **Environment Variables**, add:
-   - **Key:** `VITE_GEMINI_API_KEY`
-   - **Value:** `your_gemini_api_key`
-4. Click **Deploy**. Vercel will automatically build using `npm run build` with full client-side routing support via `vercel.json`.
-
----
-
-## 🧩 Project Structure
-
-```
-AI Learning Twin/
-├── src/
-│   ├── components/
-│   │   ├── common/
-│   │   │   ├── ApiKeyModal.tsx           # Secure Gemini API key configuration
-│   │   │   ├── DigitalTwinVisualizer.tsx # Live neural graph cognitive state visualizer
-│   │   │   ├── Navbar.tsx                # Responsive navigation & status indicators
-│   │   │   └── ProgressBar.tsx           # Amber gradient glowing mastery bars
-│   │   └── views/
-│   │       ├── LandingView.tsx           # Hero, problem/solution, 5-stage loop
-│   │       ├── GoalSelectionView.tsx     # Focus domain selection
-│   │       ├── DiagnosticView.tsx        # 10-question adaptive assessment
-│   │       ├── DashboardView.tsx         # Live Twin profile, progress, misconceptions
-│   │       ├── TutorView.tsx             # 4-mode adaptive tutor (Explain, Example, etc.)
-│   │       ├── AdaptiveQuizView.tsx      # 5-question targeted adaptive quiz
-│   │       ├── CodingPracticeView.tsx    # Python implementation challenge & AI feedback
-│   │       └── ProgressView.tsx          # Initial vs Current mastery & growth charts
-│   ├── context/
-│   │   └── LearnerContext.tsx            # Global state, persistence, activity logging
-│   ├── data/
-│   │   ├── diagnosticQuestions.ts        # 10 multi-tier diagnostic question dataset
-│   │   └── fallbackData.ts               # Offline simulation resilience data
-│   ├── services/
-│   │   └── gemini.ts                     # Gemini API caller, JSON parsing & prompt schemas
-│   ├── types/
-│   │   └── index.ts                      # Full TypeScript interfaces and domain models
-│   ├── App.tsx                           # Main router & layout container
-│   ├── index.css                         # Tailwind CSS v4 styling & dark theme
-│   └── main.tsx                          # React entry point
-├── .env.example                          # Environment variable guide
-├── .gitignore                            # Secrets & build ignores
-├── index.html                            # Semantic HTML & metadata
-├── package.json                          # Dependencies & scripts
-├── tsconfig.json                         # TypeScript configuration
-├── vercel.json                           # Vercel SPA routing rewrites
-├── vite.config.ts                        # Vite & Tailwind v4 plugin setup
-└── README.md                             # Documentation
-```
-
----
-
-## 🏆 Hackathon Highlights
-- **Not Just A Chatbot:** Real cognitive modeling that maintains persistent state across learning sessions.
-- **Deep Misconception Diagnosis:** Finds the underlying *why* behind wrong answers.
-- **Closed-Loop Adaptation:** Every practice test or code submission updates the twin and redirects future recommendations.
-- **Flawless Demo Experience:** One-click benchmark loading and auto-fill buttons allow judges to experience the full loop without delays.
 
 Built for the AI Hackathon.
