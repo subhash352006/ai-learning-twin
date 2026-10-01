@@ -175,8 +175,8 @@ export class CognitiveEngine {
   ): Promise<TeachBackEvaluation> {
     const text = explanation.toLowerCase().trim();
 
-    // Check if Gemini is configured via environment variable
-    if (GeminiApiClient.isConfigured()) {
+    // Try calling server-side /api/gemini
+    try {
       const prompt = `Evaluate this student's Teach-Back explanation for the AI concept: "${concept}".
 Learner's Explanation:
 "${explanation}"
@@ -203,9 +203,11 @@ Return a strict JSON object with this EXACT structure:
 }`;
 
       const aiResponse = await GeminiApiClient.generateStructuredContent<TeachBackEvaluation>(prompt);
-      if (aiResponse) {
+      if (aiResponse && aiResponse.conceptualCorrectness) {
         return aiResponse;
       }
+    } catch (err) {
+      console.warn('AI call via /api/gemini bypassed, using cognitive engine:', err);
     }
 
     // Cognitive deterministic evaluation engine
